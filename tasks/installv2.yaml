@@ -1,0 +1,41 @@
+# install_fluentd.yml
+
+- name: Install Fluentd
+  hosts: your_target_host  # Replace with the target host where you want to install Fluentd
+  become: true
+
+  tasks:
+    - name: Install required packages
+      package:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - curl
+        - gnupg2
+        - gcc-c++
+        - make
+
+    - name: Add Fluentd repository GPG key
+      rpm_key:
+        state: present
+        key: https://packages.treasuredata.com/GPG-KEY-td-agent
+
+    - name: Add Fluentd repository
+      yum_repository:
+        name: td-agent
+        description: td-agent repository
+        baseurl: https://packages.treasuredata.com/3/redhat/$releasever/$basearch
+        gpgcheck: yes
+        gpgkey: https://packages.treasuredata.com/GPG-KEY-td-agent
+        enabled: yes
+
+    - name: Install Fluentd
+      package:
+        name: td-agent
+        state: present
+
+    - name: Start Fluentd service
+      service:
+        name: td-agent
+        state: started
+        enabled: yes
